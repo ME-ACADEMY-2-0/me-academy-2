@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { recordRedemption } from "./coupons";
+import { rewardReferrer } from "./referrals";
 import { emailGuestAccess, emailOrderReceipt } from "@/lib/email/notify";
 import { accountForGuest, maskEmail } from "./guest";
 import { initializeTransaction, type VerifiedTransaction } from "@/lib/paystack";
@@ -188,6 +189,7 @@ async function completeOrder(order: OrderRow, paidAt: string, destination: strin
   }
 
   if (order.coupon_id) await recordRedemption({ ...order, user_id: userId });
+  await rewardReferrer(userId, order.total_minor);
 
   const { data: items } = await db
     .from("payments")

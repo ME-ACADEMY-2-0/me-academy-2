@@ -86,6 +86,8 @@ export async function setHeroBackground(url: string | null): Promise<{ error?: s
   return res?.error ? { error: res.error } : {};
 }
 
+const percent = (fd: FormData, key: string) => Math.min(100, Math.max(0, Math.round(Number(fd.get(key)) || 0)));
+
 export async function saveLearningSettings(_prev: FormState, fd: FormData): Promise<FormState> {
   const { admin, db } = await requireAdmin("platform");
   const { error } = await db
@@ -93,6 +95,9 @@ export async function saveLearningSettings(_prev: FormState, fd: FormData): Prom
     .update({
       certificate_signer_name: str(fd, "certificate_signer_name").slice(0, 80) || null,
       certificate_signer_title: str(fd, "certificate_signer_title").slice(0, 80) || null,
+      referrals_enabled: fd.get("referrals_enabled") === "on",
+      referral_friend_percent: percent(fd, "referral_friend_percent"),
+      referral_reward_percent: percent(fd, "referral_reward_percent"),
       updated_by: admin.id,
       updated_at: new Date().toISOString(),
     })

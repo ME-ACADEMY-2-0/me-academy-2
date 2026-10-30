@@ -46,7 +46,7 @@ you as a member. If you host it for them, note that in the handover.
 ## Stage 1. Copy the template
 
 ```bash
-cp -R ~/Desktop/TEMPLATES/scolar ~/Desktop/<client-folder>/<client-app>
+cp -R ~/Desktop/PROJECTS/TEMPLATES/scolar ~/Desktop/<client-folder>/<client-app>
 cd ~/Desktop/<client-folder>/<client-app>
 rm -rf .git .next node_modules && git init
 npm install
@@ -205,7 +205,8 @@ Sign in at `https://yourschool.com/admin/login` as the super admin.
    emails match.
 3. **Settings > Platform.** Set the support email (shown on the contact page and legal pages, and where contact form
    messages go) and the other platform details.
-4. **Settings > Learning.** Set the name and title of the person who signs certificates.
+4. **Settings > Learning.** Set the name and title of the person who signs certificates, and the referral
+   programme: on or off, the friend's welcome discount and the referrer's reward (both default to 10%).
 5. **Settings > Features.** Turn the AI tools off, trial them with admins only, or launch them to everyone. They need `CLOUDFLARE_ACCOUNT_ID` and
    `CLOUDFLARE_AI_TOKEN` (Workers AI token from the Cloudflare dashboard). Without them the AI features stay hidden.
 6. **Settings > Appearance.** Set the background of the welcome banner on the learner dashboard.
@@ -279,6 +280,9 @@ Test on the live domain, on a phone and on a desktop, in light and dark mode.
 - [ ] Buy a paid course with a Paystack test card. Access is granted, a receipt email arrives, and the payment shows
       in Admin > Financials.
 - [ ] Apply a coupon at checkout. The discount shows, and Financials records it.
+- [ ] Referral: copy your link from Settings > Refer a friend and sign up with it in a private window. The new
+      account gets a WELCOME- code, and you get a "A friend joined" notification. Buy a paid course as the friend
+      using that code. You then get a THANKS- reward code.
 - [ ] Start a checkout and abandon it. A reminder email arrives later (this needs stage 6 cron).
 
 **Admin and support**

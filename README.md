@@ -15,6 +15,7 @@ needs no code changes beyond their own pages and legal text.
 - Video, text and document lessons with progress tracking.
 - Quizzes and certificates (publicly verifiable).
 - Reviews, badges, a public profile and notifications.
+- Refer a friend: welcome coupon for the friend, reward coupon for the referrer.
 - Support chat with staff.
 - Two-step sign-in, data export and an AI study assistant (optional).
 - Installable as an app (PWA).

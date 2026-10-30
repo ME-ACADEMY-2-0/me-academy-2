@@ -9,6 +9,7 @@ const TABS = [
   { href: "/settings/account", label: "Account" },
   { href: "/settings/security", label: "Security" },
   { href: "/settings/billing", label: "Billing" },
+  { href: "/settings/referrals", label: "Refer a friend" },
   { href: "/settings/notifications", label: "Notifications" },
 ];
 

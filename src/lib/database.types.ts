@@ -1599,6 +1599,9 @@ export type Database = {
           id: boolean
           logo_dark_url: string | null
           logo_url: string | null
+          referral_friend_percent: number
+          referral_reward_percent: number
+          referrals_enabled: boolean
           site_name: string
           social_instagram: string | null
           social_linkedin: string | null
@@ -1627,6 +1630,9 @@ export type Database = {
           id?: boolean
           logo_dark_url?: string | null
           logo_url?: string | null
+          referral_friend_percent?: number
+          referral_reward_percent?: number
+          referrals_enabled?: boolean
           site_name?: string
           social_instagram?: string | null
           social_linkedin?: string | null
@@ -1655,6 +1661,9 @@ export type Database = {
           id?: boolean
           logo_dark_url?: string | null
           logo_url?: string | null
+          referral_friend_percent?: number
+          referral_reward_percent?: number
+          referrals_enabled?: boolean
           site_name?: string
           social_instagram?: string | null
           social_linkedin?: string | null
@@ -1698,6 +1707,8 @@ export type Database = {
           notification_prefs: Json
           onboarded_at: string | null
           profile_public: boolean
+          referral_code: string | null
+          referred_by: string | null
           show_current_learning: boolean
           skill_level: string | null
           status: Database["public"]["Enums"]["account_status"]
@@ -1727,6 +1738,8 @@ export type Database = {
           notification_prefs?: Json
           onboarded_at?: string | null
           profile_public?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           show_current_learning?: boolean
           skill_level?: string | null
           status?: Database["public"]["Enums"]["account_status"]
@@ -1756,6 +1769,8 @@ export type Database = {
           notification_prefs?: Json
           onboarded_at?: string | null
           profile_public?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           show_current_learning?: boolean
           skill_level?: string | null
           status?: Database["public"]["Enums"]["account_status"]
@@ -1770,6 +1785,13 @@ export type Database = {
           {
             foreignKeyName: "profiles_deleted_by_fkey"
             columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1855,6 +1877,68 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "course_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          reward_coupon_id: string | null
+          rewarded_at: string | null
+          status: string
+          welcome_coupon_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          reward_coupon_id?: string | null
+          rewarded_at?: string | null
+          status?: string
+          welcome_coupon_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_coupon_id?: string | null
+          rewarded_at?: string | null
+          status?: string
+          welcome_coupon_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_reward_coupon_id_fkey"
+            columns: ["reward_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_welcome_coupon_id_fkey"
+            columns: ["welcome_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
             referencedColumns: ["id"]
           },
         ]

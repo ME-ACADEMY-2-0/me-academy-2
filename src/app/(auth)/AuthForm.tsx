@@ -19,6 +19,13 @@ function nextPath() {
   return next.startsWith("/") && !next.startsWith("//") ? next : "/learn";
 }
 
+// Referral code from /signup?ref=CODE, or the cookie set by a /r/CODE link. Checked against real codes on sign-up.
+function referralCode() {
+  const fromUrl = new URLSearchParams(window.location.search).get("ref");
+  const fromCookie = document.cookie.match(/(?:^|; )scolar_ref=([^;]+)/)?.[1];
+  return (fromUrl || fromCookie || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16) || undefined;
+}
+
 function callbackUrl(next: string) {
   return `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 }
@@ -122,7 +129,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       email,
       password,
       options: {
-        data: { full_name: String(fd.get("name") ?? "").trim() },
+        data: { full_name: String(fd.get("name") ?? "").trim(), ref: referralCode() },
         emailRedirectTo: callbackUrl("/learn"),
       },
     });

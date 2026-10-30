@@ -4902,3 +4902,77 @@ CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXEC
 
 -- Live updates for the support inbox and in-app notifications.
 ALTER PUBLICATION supabase_realtime ADD TABLE public.support_threads, public.support_messages, public.notifications;
+
+-- The single settings row every admin settings page reads and updates.
+INSERT INTO public.platform_settings (id) VALUES (true) ON CONFLICT DO NOTHING;
+
+-- Referrals. Every learner has a referral code (link: /r/CODE). A friend who signs up through it gets a one-time
+-- welcome coupon, and the referrer gets a reward coupon after the friend's first paid order
+-- (src/lib/data/referrals.ts). Both are ordinary coupons locked to one email, so they show in Admin > Coupons.
+ALTER TABLE public.profiles
+  ADD COLUMN referral_code text UNIQUE,
+  ADD COLUMN referred_by uuid REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+ALTER TABLE public.platform_settings
+  ADD COLUMN referrals_enabled boolean DEFAULT true NOT NULL,
+  ADD COLUMN referral_friend_percent integer DEFAULT 10 NOT NULL CHECK (referral_friend_percent BETWEEN 0 AND 100),
+  ADD COLUMN referral_reward_percent integer DEFAULT 10 NOT NULL CHECK (referral_reward_percent BETWEEN 0 AND 100);
+
+CREATE TABLE public.referrals (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    referrer_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    referred_id uuid NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+    status text DEFAULT 'joined' NOT NULL CHECK (status IN ('joined', 'rewarded')),
+    welcome_coupon_id uuid REFERENCES public.coupons(id) ON DELETE SET NULL,
+    reward_coupon_id uuid REFERENCES public.coupons(id) ON DELETE SET NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    rewarded_at timestamp with time zone
+);
+CREATE INDEX referrals_referrer_idx ON public.referrals (referrer_id);
+ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "referrals: own or admin" ON public.referrals FOR SELECT TO authenticated
+  USING (referrer_id = (SELECT auth.uid()) OR referred_id = (SELECT auth.uid()) OR public.is_admin());
+GRANT ALL ON TABLE public.referrals TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  v_referrer uuid;
+  v_on boolean;
+  v_percent integer;
+  v_coupon uuid;
+  v_code text;
+begin
+  insert into public.profiles (id, full_name, avatar_url, referral_code)
+  values (new.id, new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'avatar_url',
+          upper(substr(md5(new.id::text || clock_timestamp()::text), 1, 8)));
+  insert into public.user_roles (user_id, role) values (new.id, 'student');
+
+  if coalesce(new.raw_user_meta_data ->> 'ref', '') <> '' then
+    select referrals_enabled, referral_friend_percent into v_on, v_percent from public.platform_settings where id;
+    select p.id into v_referrer from public.profiles p
+      where p.referral_code = upper(new.raw_user_meta_data ->> 'ref') and p.id <> new.id;
+    if v_referrer is not null and coalesce(v_on, false) then
+      update public.profiles set referred_by = v_referrer where id = new.id;
+      if v_percent > 0 and new.email is not null then
+        insert into public.coupons (code, description, kind, value, emails, max_uses, per_person)
+        values ('WELCOME-' || upper(substr(md5(random()::text), 1, 6)), 'Referral welcome discount', 'percent',
+                v_percent, array[lower(new.email)], 1, 1)
+        returning id, code into v_coupon, v_code;
+        insert into public.notifications (user_id, kind, title, body, href)
+        values (new.id, 'referral', 'Your welcome gift',
+                'Use ' || v_code || ' at checkout for ' || v_percent || '% off your first course.', '/settings/referrals');
+      end if;
+      insert into public.referrals (referrer_id, referred_id, welcome_coupon_id) values (v_referrer, new.id, v_coupon);
+      insert into public.notifications (user_id, kind, title, body, href)
+      values (v_referrer, 'referral', 'A friend joined',
+              coalesce(nullif(new.raw_user_meta_data ->> 'full_name', ''), 'Someone')
+                || ' signed up with your link. You get a reward when they buy their first course.',
+              '/settings/referrals');
+    end if;
+  end if;
+  return new;
+end;
+$$;
