@@ -1,0 +1,86 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { Suspense } from "react";
+import type { Metadata, Viewport } from "next";
+import Shell from "@/components/shell/Shell";
+import { getCurrentUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { featuresFor } from "@/lib/data/features";
+import { getGuideState } from "@/lib/data/guide";
+import "./app.css";
+
+export const metadata: Metadata = {
+  title: { default: "Dashboard", template: "%s" },
+  robots: { index: false, follow: false },
+};
+
+// The signed-in app behaves like a phone app: no pinch zoom (fields are 16px on phones, so iOS doesn't zoom on focus).
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: "cover" };
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<ShellSkeleton />}>
+      <AuthedShell>{children}</AuthedShell>
+    </Suspense>
+  );
+}
+
+async function AuthedShell({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+  // Re-read whenever the layout re-renders (full loads and refresh() after actions), so a badge earned
+  // without a navigation still triggers the celebration.
+  const supabase = await createClient();
+  const [{ data: unseen }, features, guide] = await Promise.all([
+    supabase.from("user_badges").select("badge_id").eq("user_id", user.id).is("seen_at", null),
+    featuresFor(user.roles),
+    getGuideState(user.id),
+  ]);
+  return (
+    <Shell
+      user={{
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        avatarUrl: user.avatarUrl,
+      }}
+      needsOnboarding={user.needsOnboarding}
+      needsUsername={!user.username}
+      features={features}
+      unseenBadges={(unseen ?? []).map((b) => b.badge_id).join(",")}
+      guide={guide}
+    >
+      {children}
+    </Shell>
+  );
+}
+
+function ShellSkeleton() {
+  return (
+    <div className="et-app is-light">
+      <aside className="et-sidebar et-hide-sm">
+        <div className="et-sidebar-top">
+          <BrandLogo className="et-brand-logo" />
+        </div>
+        <div className="et-nav">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="et-skel" style={{ height: 34, marginBottom: 6 }} />
+          ))}
+        </div>
+      </aside>
+      <div className="et-body">
+        <header className="et-header" />
+        <main className="et-main">
+          <div className="et-page">
+            <div className="et-skel" style={{ height: 44, width: 260 }} />
+            <div className="et-stats">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="et-skel" style={{ height: 96 }} />
+              ))}
+            </div>
+            <div className="et-skel" style={{ height: 280 }} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

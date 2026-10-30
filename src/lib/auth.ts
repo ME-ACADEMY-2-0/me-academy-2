@@ -1,0 +1,57 @@
+import "server-only";
+import { cache } from "react";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getMyPrivateProfile } from "@/lib/my-profile";
+import { sessionUser } from "@/lib/supabase/session";
+import type { AppRole } from "@/lib/roles";
+
+export type CurrentUser = {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  roles: AppRole[];
+  // Sign-in methods on the account, e.g. ["email", "google"].
+  providers: string[];
+  // Public handle (/@username); null until they pick one in the welcome guide or Settings.
+  username: string | null;
+  // True until the welcome guide has been finished or skipped.
+  needsOnboarding: boolean;
+};
+
+type Supabase = Awaited<ReturnType<typeof createClient>>;
+
+// Server-side backstop for the proxy: a session that still owes its two-step code goes to /verify.
+export async function requireFullSession(supabase: Supabase, next: string) {
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") redirect(`/verify?next=${encodeURIComponent(next)}`);
+}
+
+// One session + profile read per request, shared by the layout and pages.
+export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
+  const supabase = await createClient();
+  const user = await sessionUser(supabase);
+  if (!user) redirect("/login");
+  await requireFullSession(supabase, "/learn");
+
+  const [{ data: profile }, priv, { data: roles }] = await Promise.all([
+    supabase.from("profiles").select("full_name, avatar_url, bio, username").eq("id", user.id).single(),
+    getMyPrivateProfile(),
+    supabase.from("user_roles").select("role").eq("user_id", user.id),
+  ]);
+  if (priv?.status === "suspended" || priv?.deleted_at) redirect("/suspended");
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: profile?.full_name ?? "",
+    avatarUrl: profile?.avatar_url ?? null,
+    bio: profile?.bio ?? null,
+    username: profile?.username ?? null,
+    roles: roles?.length ? roles.map((r) => r.role) : ["student"],
+    providers: user.providers,
+    needsOnboarding: !!priv && !priv.onboarded_at,
+  };
+});

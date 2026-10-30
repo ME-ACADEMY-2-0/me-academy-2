@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--brand-font,var(--font-geist));
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--brand-font,var(--font-geist)), system-ui, sans-serif;
+}
+
+/* iOS shows the page background in the status bar area and below the page (an installed app can stop layouts short
+   of the home bar). It follows the screen's own theme, not the phone's, so no white or black strips show. */
+html:has(.et-app),html:has(.et-app) body{background:#070b14}
+html:has(.et-app.is-light),html:has(.et-app.is-light) body{background:#f2f5fa}
+html:has(.et-auth),html:has(.et-auth) body{background:#05080f}
+html:has(.et-auth.is-light),html:has(.et-auth.is-light) body{background:#e9eef6}
+@media(max-width:600px){
+  html:has(.et-auth),html:has(.et-auth) body{background:#0c1220}
+  html:has(.et-auth.is-light),html:has(.et-auth.is-light) body{background:#fafbfd}
+}
+
+/* Wordmark and letter mark shown until the school uploads a logo / icon (Admin > Settings > Branding). */
+.sc-wordmark{display:inline-flex;align-items:center;font-weight:800;font-size:19px;letter-spacing:-.03em;line-height:1;color:var(--brand);white-space:nowrap}
+.sc-mark{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--brand);color:var(--brand-fg);font-weight:800;font-size:15px;line-height:1}

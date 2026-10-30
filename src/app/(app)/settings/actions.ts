@@ -1,0 +1,264 @@
+"use server";
+import { siteUrl } from "@/lib/email/site";
+import { redirect } from "next/navigation";
+import { isAvatarFace } from "@/lib/avatars";
+import { refresh } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { deleteObject, keyFromUrl } from "@/lib/r2";
+import type { FormState } from "@/lib/form-state";
+import { normalizeUsername, usernameCandidates, usernameProblem } from "@/lib/username";
+import { bannedWord, moderate } from "@/lib/moderation";
+
+async function authed() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  return { supabase, user };
+}
+
+// Deletes a replaced image from R2. Ignores URLs we don't host (e.g. Google profile photos).
+async function removeReplaced(previous: string | null | undefined, next: string | null) {
+  const key = previous && previous !== next ? keyFromUrl(previous) : null;
+  if (key) await deleteObject(key).catch(() => {});
+}
+
+const text = (fd: FormData, key: string, max = 2000) => String(fd.get(key) ?? "").trim().slice(0, max);
+
+// Accepts "example.com" or a full URL; returns a normalised https URL, "" for empty, or null when invalid.
+function cleanUrl(raw: string, mustInclude?: string): string | null {
+  if (!raw) return "";
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+    if (!url.hostname.includes(".")) return null;
+    if (mustInclude && !url.hostname.endsWith(mustInclude)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export async function updateProfile(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+
+  const website = cleanUrl(text(fd, "website_url"));
+  if (website === null) return { error: "That website link doesn't look right." };
+  const linkedin = cleanUrl(text(fd, "linkedin_url"), "linkedin.com");
+  if (linkedin === null) return { error: "Use a linkedin.com link for LinkedIn." };
+  const x = cleanUrl(text(fd, "x_url"));
+  if (x === null || (x && !/(^|\.)(x|twitter)\.com$/.test(new URL(x).hostname))) return { error: "Use an x.com link for X." };
+
+  const interests = [
+    ...new Set(
+      text(fd, "interests", 600)
+        .split(",")
+        .map((s) => s.trim().slice(0, 32))
+        .filter(Boolean),
+    ),
+  ].slice(0, 12);
+
+  const check = await moderate("profile", user.id, [text(fd, "full_name", 80), text(fd, "headline", 120), text(fd, "location", 80), text(fd, "bio"), interests.join(", ")], `/admin/users/${user.id}`);
+  if (check.error) return { error: check.error };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: text(fd, "full_name", 80) || null,
+      headline: text(fd, "headline", 120) || null,
+      location: text(fd, "location", 80) || null,
+      bio: text(fd, "bio") || null,
+      website_url: website || null,
+      linkedin_url: linkedin || null,
+      x_url: x || null,
+      interests,
+      profile_public: fd.get("profile_public") === "on",
+      show_current_learning: fd.get("show_current_learning") === "on",
+    })
+    .eq("id", user.id);
+  if (error) return { error: "Could not save your profile." };
+  await check.record(user.id);
+  refresh();
+  return { ok: "Profile saved." };
+}
+
+export async function updateNotifications(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      notification_prefs: {
+        course_updates: fd.get("course_updates") === "on",
+        support_replies: fd.get("support_replies") === "on",
+        product_news: fd.get("product_news") === "on",
+      },
+    })
+    .eq("id", user.id);
+  if (error) return { error: "Could not save your preferences." };
+  refresh();
+  return { ok: "Preferences saved." };
+}
+
+export async function changeEmail(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+  const email = text(fd, "email", 254).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email address." };
+  if (email === user.email) return { error: "That's already your email." };
+
+  const site = siteUrl();
+  const { error } = await supabase.auth.updateUser({ email }, { emailRedirectTo: `${site}/auth/callback?next=/settings/account` });
+  if (error) return { error: error.status === 429 ? "Too many emails sent. Try again in an hour." : error.message };
+  return { ok: `Confirmation links sent to ${user.email} and ${email}. Your email changes once you confirm.` };
+}
+
+export async function changePassword(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+  const current = String(fd.get("current_password") ?? "");
+  const next = String(fd.get("new_password") ?? "");
+  const confirm = String(fd.get("confirm_password") ?? "");
+
+  if (next.length < 8) return { error: "Use at least 8 characters for your new password." };
+  if (next !== confirm) return { error: "The new passwords don't match." };
+
+  const hasPassword = (user.app_metadata?.providers as string[] | undefined)?.includes("email");
+  if (hasPassword) {
+    const { error } = await supabase.auth.signInWithPassword({ email: user.email!, password: current });
+    if (error) return { error: "Your current password is incorrect." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: next });
+  if (error) return { error: error.code === "same_password" ? "Pick a password you haven't used here before." : error.message };
+  return { ok: hasPassword ? "Password updated." : "Password set. You can now also sign in with your email." };
+}
+
+export async function signOutEverywhere() {
+  const { supabase } = await authed();
+  await supabase.auth.signOut({ scope: "global" });
+  redirect("/login");
+}
+
+// Soft delete, same as an admin delete: hidden immediately, restorable by staff for 30 days, then purged.
+export async function deleteAccount(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+  if (text(fd, "confirm") !== "DELETE") return { error: 'Type DELETE to confirm.' };
+
+  const { error } = await createAdminClient()
+    .from("profiles")
+    .update({ deleted_at: new Date().toISOString(), deleted_by: user.id })
+    .eq("id", user.id);
+  if (error) return { error: "Could not delete your account. Contact support." };
+
+  await supabase.auth.signOut({ scope: "global" });
+  redirect("/login");
+}
+
+export async function setDefaultCard(fd: FormData) {
+  const { supabase, user } = await authed();
+  const id = String(fd.get("id") ?? "");
+  // One default per user (partial unique index), so clear the old one first.
+  await supabase.from("payment_methods").update({ is_default: false }).eq("user_id", user.id).eq("is_default", true);
+  await supabase.from("payment_methods").update({ is_default: true }).eq("id", id).eq("user_id", user.id);
+  refresh();
+}
+
+export async function removeCard(fd: FormData) {
+  const { supabase, user } = await authed();
+  await supabase.from("payment_methods").delete().eq("id", String(fd.get("id") ?? "")).eq("user_id", user.id);
+  refresh();
+}
+
+// Cover banner saves immediately on upload, separate from the details form.
+export async function saveCover(url: string | null) {
+  const { supabase, user } = await authed();
+  if (url && !/^https?:\/\//.test(url)) return { error: "Invalid image URL." };
+  const { data: before } = await supabase.from("profiles").select("cover_url").eq("id", user.id).single();
+  const { error } = await supabase.from("profiles").update({ cover_url: url }).eq("id", user.id);
+  if (error) return { error: "Could not save your cover." };
+  await removeReplaced(before?.cover_url, url);
+  refresh();
+  return {};
+}
+
+export type UsernameCheck = {
+  name: string;
+  status: "available" | "taken" | "invalid" | "current" | "empty";
+  message: string;
+  suggestions: string[];
+};
+
+// Up to 4 free usernames built from what was typed and the user's name.
+async function freeSuggestions(supabase: Awaited<ReturnType<typeof createClient>>, seeds: string[]) {
+  const candidates = usernameCandidates(seeds);
+  if (!candidates.length) return [];
+  const { data } = await supabase.from("profiles").select("username").in("username", candidates);
+  const taken = new Set((data ?? []).map((r) => r.username));
+  return candidates.filter((c) => !taken.has(c)).slice(0, 4);
+}
+
+// Live availability check for the username picker in Settings > My details.
+export async function checkUsername(raw: string): Promise<UsernameCheck> {
+  const { supabase, user } = await authed();
+  const name = normalizeUsername(raw).slice(0, 40);
+  const { data: me } = await supabase.from("profiles").select("full_name, username").eq("id", user.id).single();
+  const seeds = [name, me?.full_name ?? "", user.email?.split("@")[0] ?? ""];
+
+  if (!name) return { name, status: "empty", message: "", suggestions: await freeSuggestions(supabase, seeds) };
+  if (name === me?.username) return { name, status: "current", message: "This is your current username.", suggestions: [] };
+
+  const problem = usernameProblem(name) ?? (bannedWord(name.replace(/[._-]/g, " ")) ? "That username isn't allowed. Pick another." : null);
+  if (problem) return { name, status: "invalid", message: problem, suggestions: await freeSuggestions(supabase, seeds) };
+
+  const { data: existing } = await supabase.from("profiles").select("id").eq("username", name).maybeSingle();
+  if (existing) return { name, status: "taken", message: `@${name} is taken.`, suggestions: await freeSuggestions(supabase, seeds) };
+  return { name, status: "available", message: `@${name} is available.`, suggestions: [] };
+}
+
+// Saves the username once the user confirms it in the picker.
+export async function claimUsername(raw: string): Promise<{ ok?: string; error?: string }> {
+  const { supabase, user } = await authed();
+  const name = normalizeUsername(raw);
+  const problem = usernameProblem(name) ?? (bannedWord(name.replace(/[._-]/g, " ")) ? "That username isn't allowed. Pick another." : null);
+  if (problem) return { error: problem };
+  const { error } = await supabase.from("profiles").update({ username: name }).eq("id", user.id);
+  if (error?.code === "23505") return { error: `Someone just took @${name}. Pick another.` };
+  if (error) return { error: "Could not save your username." };
+  refresh();
+  return { ok: `You're now @${name}.` };
+}
+
+// Profile photo saves immediately from the crop modal, separate from the details form.
+export async function saveAvatar(url: string | null) {
+  const { supabase, user } = await authed();
+  // An uploaded photo (full URL) or one of the character faces (a site path like /avatars/03.svg).
+  if (url && !/^https?:\/\//.test(url) && !isAvatarFace(url)) return { error: "Invalid image URL." };
+  const { data: before } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).single();
+  const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+  if (error) return { error: "Could not save your photo." };
+  await removeReplaced(before?.avatar_url, url);
+  refresh();
+  return {};
+}
+
+export async function saveBillingDetails(_prev: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, user } = await authed();
+  const receipt = text(fd, "receipt_email", 254).toLowerCase();
+  if (receipt && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(receipt)) return { error: "Enter a valid email for receipts." };
+
+  // With the company switch off, the hidden company fields are cleared rather than kept.
+  const company = fd.get("company_invoice") === "on";
+  const { error } = await supabase.from("billing_details").upsert({
+    user_id: user.id,
+    name: text(fd, "name", 120) || null,
+    company: (company && text(fd, "company", 120)) || null,
+    address: (company && text(fd, "address", 300)) || null,
+    city: (company && text(fd, "city", 80)) || null,
+    country: text(fd, "country", 80) || null,
+    tax_id: (company && text(fd, "tax_id", 40)) || null,
+    receipt_email: receipt && receipt !== user.email ? receipt : null,
+  });
+  if (error) return { error: "Could not save your billing details." };
+  refresh();
+  return { ok: "Billing details saved." };
+}
+
