@@ -44,5 +44,3 @@ next-env.d.ts
 # local screenshots
 /screenshots
 
-# Internal notes (roadmap, handoff), never committed
-docs/
