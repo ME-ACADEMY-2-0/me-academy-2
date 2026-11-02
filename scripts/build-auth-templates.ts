@@ -7,7 +7,7 @@ import { authLink } from "../src/lib/email/auth-links";
 import { brandify } from "../src/lib/email/brand-tokens";
 
 const brand = {
-  name: process.env.BRAND_NAME || "Scolar",
+  name: process.env.BRAND_NAME || "ME Academy",
   logoUrl: process.env.BRAND_LOGO_URL || null,
   accent: process.env.BRAND_COLOR || "#2563eb",
   accentFg: process.env.BRAND_COLOR_TEXT || "#ffffff",

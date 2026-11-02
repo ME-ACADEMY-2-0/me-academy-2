@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from "react";
 import { useBrand } from "@/components/brand/BrandProvider";
 
-const THEME_KEY = "scolar_theme";
+const THEME_KEY = "meacademy_theme";
 const listeners = new Set<() => void>();
 
 // The visitor's own choice ("light" | "dark"), or null when they haven't picked one.

@@ -2,18 +2,14 @@
 
 // Course categories and learner topics are the same list, so they can be matched directly.
 export const TOPICS = [
-  "Design",
-  "Development",
-  "Marketing",
-  "Business",
-  "Data & AI",
-  "Product",
-  "Content creation",
-  "Finance",
-  "Photography & video",
-  "Writing",
-  "Sales",
-  "Personal growth",
+  "Banking & Finance",
+  "Project Finance",
+  "Corporate & Commercial Law",
+  "Due Diligence",
+  "Contract Drafting & Negotiation",
+  "Equity Advisory",
+  "Tax",
+  "Corporate Investigations",
 ] as const;
 
 export const GOAL_LABELS = {

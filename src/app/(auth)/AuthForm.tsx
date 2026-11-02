@@ -22,7 +22,7 @@ function nextPath() {
 // Referral code from /signup?ref=CODE, or the cookie set by a /r/CODE link. Checked against real codes on sign-up.
 function referralCode() {
   const fromUrl = new URLSearchParams(window.location.search).get("ref");
-  const fromCookie = document.cookie.match(/(?:^|; )scolar_ref=([^;]+)/)?.[1];
+  const fromCookie = document.cookie.match(/(?:^|; )meacademy_ref=([^;]+)/)?.[1];
   return (fromUrl || fromCookie || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16) || undefined;
 }
 

@@ -3,7 +3,7 @@ import { getPublicBlog } from "@/lib/data/blog";
 import { BlogIndex } from "./BlogIndex";
 
 export const metadata = {
-  title: "Blog",
+  title: "Insights",
   description: "Guides, stories and advice, plus the best reads from around the web.",
 };
 

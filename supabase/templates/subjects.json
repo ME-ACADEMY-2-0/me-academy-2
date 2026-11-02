@@ -1,7 +1,7 @@
 {
-  "confirmation": "Confirm your Scolar account",
-  "recovery": "Reset your Scolar password",
+  "confirmation": "Confirm your ME Academy account",
+  "recovery": "Reset your ME Academy password",
   "email_change": "Confirm your new email address",
-  "magic_link": "Your Scolar sign-in link",
-  "invite": "You've been invited to Scolar"
+  "magic_link": "Your ME Academy sign-in link",
+  "invite": "You've been invited to ME Academy"
 }

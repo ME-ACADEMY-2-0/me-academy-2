@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { CourseView } from "@/components/market/CourseView";
 import { courseMeta, getCourseDetails } from "@/lib/data/learn";
+import { FacilitatorCard, FaqList, Section } from "@/components/market/Page";
+import { COURSE_FACILITATORS, PROGRAMMES, courseFaqs, facilitatorBySlug } from "@/lib/site-content";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -36,11 +38,14 @@ async function Course({ params }: Props) {
   if (!data) notFound();
   await connection();
   const { course: c, instructor, stats } = data;
+  const facs = (COURSE_FACILITATORS[c.slug] ?? []).map(facilitatorBySlug).filter((f): f is NonNullable<typeof f> => !!f);
+  const nba = PROGRAMMES.find((p) => p.courseSlug === c.slug) ?? null;
+  const faqs = courseFaqs({ title: c.title, summary: c.summary, level: c.level, skills: c.skills, category: c.category, facilitators: facs.map((f) => f.name), nba });
   return (
     <>
       <JsonLd
         data={[
-          seoCourse({ ...c, instructor: instructor.name, seconds: stats.seconds, rating: stats.rating, reviews: stats.reviews }),
+          seoCourse({ ...c, instructor: instructor.name, facilitators: facs, nbaCpd: nba?.cpd, seconds: stats.seconds, rating: stats.rating, reviews: stats.reviews }),
           breadcrumbs([
             { name: "Courses", path: "/courses" },
             { name: c.title, path: `/courses/${c.slug}` },
@@ -48,6 +53,20 @@ async function Course({ params }: Props) {
         ]}
       />
       <CourseView data={data} />
+      {facs.length > 0 && (
+        <div className="mh pg pg-after">
+          <Section title="Facilitators" eyebrow="Taught by">
+            <div className="pg-fac-row">
+              {facs.map((f) => (
+                <FacilitatorCard key={f.slug} f={f} href={f.slug === "mary-ekemezie" ? "/mary-ekemezie" : `/facilitators#${f.slug}`} />
+              ))}
+            </div>
+          </Section>
+        </div>
+      )}
+      <div className="mh pg pg-after">
+        <FaqList items={faqs} />
+      </div>
     </>
   );
 }

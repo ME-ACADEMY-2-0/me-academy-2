@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Scolar project rules
+## ME Academy project rules
 
-Scolar is a white-label e-learning template. Each client gets a copy. Setup steps are in docs/SETUP.md.
+ME Academy 2.0 is an e-learning platform. Setup steps are in docs/SETUP.md.
 
 - **Brand is data, not code.** Name, logos, icon, colours, font and default theme live in `platform_settings` and
   load through `getBrand()` (`src/lib/brand.ts`, cached under the `brand` tag). Never hardcode a client name or hex

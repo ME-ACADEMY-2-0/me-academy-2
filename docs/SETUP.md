@@ -1,6 +1,6 @@
-# Scolar setup guide
+# ME Academy setup guide
 
-This guide takes a fresh copy of Scolar to a live, branded e-learning site for one client (a school, academy or coach).
+This guide takes this project from a fresh copy to a live, branded e-learning site.
 Plan for about two working days. Day 1 covers stages 0 to 6 (accounts, database, storage, email, payments, deploy).
 Day 2 covers stages 7 to 10 (branding, pages, content and QA).
 
@@ -33,7 +33,7 @@ Before you start, get these from the client:
   - optionally a PNG logo for dark backgrounds;
   - a square icon, at least 512 x 512.
   Ask for PNG, not WebP: email clients such as Outlook do not show WebP, and the logo is used in emails.
-- Brand colour (hex, for example `#7c3aed`) and a preferred font, if they have one. Scolar offers Geist, Inter, DM
+- Brand colour (hex, for example `#7c3aed`) and a preferred font, if they have one. The platform offers Geist, Inter, DM
   Sans, Plus Jakarta Sans, Manrope and Poppins.
 - A support email address, plus the legal entity name and address for the legal pages.
 - Access to their domain's DNS (needed for Resend and the site domain).
@@ -46,7 +46,7 @@ you as a member. If you host it for them, note that in the handover.
 ## Stage 1. Copy the template
 
 ```bash
-cp -R ~/Desktop/PROJECTS/TEMPLATES/scolar ~/Desktop/<client-folder>/<client-app>
+cp -R ~/Desktop/PROJECTS/TEMPLATES/<template> ~/Desktop/<client-folder>/<client-app>
 cd ~/Desktop/<client-folder>/<client-app>
 rm -rf .git .next node_modules && git init
 npm install
@@ -297,7 +297,7 @@ Test on the live domain, on a phone and on a desktop, in light and dark mode.
 
 - [ ] On a phone, install to the home screen. The name and icon are the client's.
 - [ ] `/sitemap.xml` and `/robots.txt` load, and a shared link shows the branded preview image.
-- [ ] No "Scolar" or placeholder text is left anywhere (search the source for `[DATE]`, `yourschool` and `Scolar`).
+- [ ] No placeholder text is left anywhere (search the source for `[DATE]` and `yourschool`).
 
 **Go live**
 

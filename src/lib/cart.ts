@@ -6,8 +6,8 @@ import { useSyncExternalStore } from "react";
 
 export type CartItem = { type: "course"; id: string; slug: string; title: string; kind: string; priceMinor: number; currency: string; coverUrl: string | null };
 
-const KEY = "scolar-cart";
-const EVENT = "scolar-cart-change";
+const KEY = "meacademy-cart";
+const EVENT = "meacademy-cart-change";
 const MAX = 20;
 const EMPTY: CartItem[] = [];
 

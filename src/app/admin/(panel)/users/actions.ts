@@ -102,7 +102,7 @@ export async function sendPasswordReset(_prev: FormState, fd: FormData): Promise
   const { data } = await db.auth.admin.getUserById(id);
   const email = data.user?.email;
   if (!email) return { error: "This user has no email address." };
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3010";
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3020";
   const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: `${site}/auth/callback?next=/settings` });
   if (error) return { error: error.message.includes("rate") ? "Email limit reached. Try again later." : "Could not send the reset email." };
   await audit(admin.id, "user.password_reset", { type: "user", id });

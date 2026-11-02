@@ -9,8 +9,11 @@ import { CartButton } from "@/components/market/CartButton";
 import { useBrand } from "@/components/brand/BrandProvider";
 
 const NAV = [
+  { href: "/legal-training", label: "Legal training" },
+  { href: "/nba-icle", label: "NBA-ICLE" },
   { href: "/courses", label: "Courses" },
-  { href: "/blog", label: "Blog" },
+  { href: "/sme-hub", label: "SME Hub" },
+  { href: "/insights", label: "Insights" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -19,17 +22,41 @@ const FOOTER = [
   {
     title: "Learn",
     links: [
+      { href: "/legal-training", label: "Legal training" },
+      { href: "/nba-icle", label: "NBA-ICLE programmes" },
       { href: "/courses", label: "All courses" },
-      { href: "/blog", label: "Blog" },
-      { href: "/certificate", label: "Verify a certificate" },
+      { href: "/insights", label: "Insights" },
+      { href: "/resources", label: "Resources" },
+    ],
+  },
+  {
+    title: "SME Hub",
+    links: [
+      { href: "/sme-hub", label: "All templates" },
+      { href: "/sme-hub/startup-documents", label: "Startup documents" },
+      { href: "/sme-hub/investment-agreements", label: "Investment agreements" },
+      { href: "/sme-hub/employment-contracts", label: "Employment contracts" },
+      { href: "/sme-hub/hr-policies", label: "HR policies" },
+      { href: "/sme-hub/corporate-governance", label: "Corporate governance" },
+    ],
+  },
+  {
+    title: "ME Academy",
+    links: [
+      { href: "/about", label: "About us" },
+      { href: "/mary-ekemezie", label: "Mary Ekemezie" },
+      { href: "/facilitators", label: "Facilitators" },
+      { href: "/testimonials", label: "Testimonials" },
+      { href: "/alumni", label: "Alumni" },
     ],
   },
   {
     title: "Support",
     links: [
-      { href: "/about", label: "About us" },
+      { href: "/faq", label: "FAQ" },
       { href: "/help", label: "Help centre" },
       { href: "/contact", label: "Contact us" },
+      { href: "/certificate", label: "Verify a certificate" },
     ],
   },
   {

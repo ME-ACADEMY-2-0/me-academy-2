@@ -1,7 +1,7 @@
 // App service worker. Keeps the app shell (offline page, icons, onboarding images) cached so the installed
 // app opens instantly and shows a friendly page when there's no connection. Pages and data always come from the
 // network: courses, progress and payments must never be served stale.
-const CACHE = "scolar-app-v1";
+const CACHE = "meacademy-app-v1";
 const OFFLINE_URL = "/offline";
 const SHELL = [
   OFFLINE_URL,

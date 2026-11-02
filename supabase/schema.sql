@@ -1,5 +1,5 @@
 -- =====================================================================================================================
--- SCOLAR database schema (single file). Run once on a NEW, empty Supabase project:
+-- ME ACADEMY database schema (single file). Run once on a NEW, empty Supabase project:
 --   Supabase dashboard > SQL Editor > New query > paste this whole file > Run.
 -- Then run supabase/seed.sql (starter course categories) and, once the site is live, supabase/cron.sql.
 -- Client-specific changes go in new numbered files under supabase/migrations/, never edits to this file.
@@ -1595,7 +1595,7 @@ CREATE TABLE public.platform_settings (
     announcement_text text,
     announcement_link text,
     announcement_active boolean DEFAULT false NOT NULL,
-    site_name text DEFAULT 'Scolar'::text NOT NULL,
+    site_name text DEFAULT 'ME Academy'::text NOT NULL,
     tagline text,
     logo_url text,
     logo_dark_url text,

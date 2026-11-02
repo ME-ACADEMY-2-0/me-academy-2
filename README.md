@@ -1,8 +1,7 @@
-# Scolar
+# ME Academy 2.0
 
-A white-label e-learning platform for a school, academy or coach. It has a learner app and a full admin. The
-brand (name, logos, icon, colours, font, light/dark default) is set from the admin, so each client install
-needs no code changes beyond their own pages and legal text.
+E-learning platform for ME Academy. It has a learner app and a full admin. The brand (name, logos, icon, colours,
+font, light/dark default) is set from the admin.
 
 **Setting up for a client? Follow [docs/SETUP.md](docs/SETUP.md) stage by stage.**
 

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${title}`,
     description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: `/insights/${post.slug}` },
     openGraph: { type: "article", title, description, publishedTime: post.published_at ?? undefined, images: post.cover_url ? [post.cover_url] : undefined },
     twitter: { card: post.cover_url ? "summary_large_image" : "summary", title, description },
   };
@@ -54,14 +54,14 @@ async function Post({ params }: Props) {
             author: post.author?.full_name ?? null,
           }),
           breadcrumbs([
-            { name: "Blog", path: "/blog" },
-            { name: post.title, path: `/blog/${post.slug}` },
+            { name: "Insights", path: "/insights" },
+            { name: post.title, path: `/insights/${post.slug}` },
           ]),
         ]}
       />
       <article className="et-pp-main">
         <ViewTracker postId={post.id} />
-        <Link href="/blog" className="et-pp-back">
+        <Link href="/insights" className="et-pp-back">
           <ArrowLeft size={14} /> All posts
         </Link>
         <p className="et-pp-meta">
@@ -96,7 +96,7 @@ async function Post({ params }: Props) {
               <ul className="et-pp-latest">
                 {latest.map((p) => (
                   <li key={p.id}>
-                    <Link href={`/blog/${p.slug}`}>
+                    <Link href={`/insights/${p.slug}`}>
                       <span className="et-pb-thumb">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {p.cover_url && <img src={p.cover_url} alt="" />}

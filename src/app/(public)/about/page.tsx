@@ -4,8 +4,8 @@ import Link from "next/link";
 import { ArrowRight, Award, BookOpen, CircleHelp, ShieldCheck, Smartphone, Users } from "lucide-react";
 import { getSiteStats } from "@/lib/data/site";
 import { getBrand } from "@/lib/brand";
-
-// STARTER PAGE: replace the copy below with the client's own story (see docs/SETUP.md, stage 7).
+import { Testimonials } from "@/components/market/Testimonials";
+import { FACILITATORS, MARY_ACADEMY_ROLE } from "@/lib/site-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrand();
@@ -25,7 +25,7 @@ export default async function AboutPage() {
     <div className="et-mkt">
       <section className="et-mkt-hero">
         <span className="et-home-pill">About {brand.name}</span>
-        <h1>Learning that fits your life.</h1>
+        <h1>Bridging the gap between legal education and practice.</h1>
         <p>{brand.tagline}</p>
         <div className="et-home-ctas">
           <Link href="/courses" className="et-btn et-btn-primary et-home-btn">
@@ -44,13 +44,53 @@ export default async function AboutPage() {
       <section className="et-mkt-split">
         <div>
           <h2>Our mission</h2>
-          <p>Tell the story of the school or coach here: who it is for, what learners walk away with, and why it exists.</p>
-          <p>Two or three short paragraphs are plenty. Keep it in the client&apos;s own voice.</p>
+          <p>{brand.name} bridges the gap between formal legal education and practice. Experienced legal practitioners teach the commercial, transactional and governance skills that the classroom leaves out.</p>
+          <h2 style={{ marginTop: 28 }}>Our vision</h2>
+          <p>Lawyers who can move into commercial practice with confidence, and institutions with the people they need to be well governed.</p>
         </div>
-        <blockquote className="et-mkt-quote">
-          <Award size={22} />
-          <p>A short quote from the founder or a learner goes here.</p>
-        </blockquote>
+        <div className="et-card et-card-pad et-fac-founder">
+          <img src="/content/people/mary-ekemezie.png" alt="Mary Ekemezie" />
+          <div>
+            <small>{MARY_ACADEMY_ROLE}</small>
+            <b>Mary Ekemezie</b>
+            <p>Founded ME Academy in 2021. A corporate and commercial lawyer who leads the academy&apos;s training in transactions, governance and legal advisory.</p>
+            <Link href="/mary-ekemezie" className="mh-link" style={{ marginTop: 10 }}>
+              About Mary Ekemezie <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="et-home-section">
+        <div className="et-home-head">
+          <h2>Our facilitators</h2>
+          <Link href="/facilitators">Full profiles</Link>
+        </div>
+        <div className="et-fac-grid">
+          {FACILITATORS.map((f) => (
+            <div key={f.name} className="et-card et-fac-card">
+              <img src={f.photo} alt={f.name} loading="lazy" />
+              <div>
+                <b>{f.name}</b>
+                <p>{f.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="et-home-section">
+        <h2>Organizations whose teams have learned with us</h2>
+        <div className="et-orgs">
+          {Array.from({ length: 12 }, (_, i) => (
+            <img key={i} src={`/content/orgs/org-${i}.png`} alt="" loading="lazy" />
+          ))}
+        </div>
+      </section>
+
+      <section className="et-home-section">
+        <h2>What participants say</h2>
+        <Testimonials />
       </section>
 
       <section className="et-home-section">
@@ -77,9 +117,9 @@ export default async function AboutPage() {
           <b>Help centre</b>
           <small>Answers about courses, payments and certificates</small>
         </Link>
-        <Link href="/blog" className="et-card et-card-pad">
-          <b>Read the blog</b>
-          <small>Guides, stories and news</small>
+        <Link href="/insights" className="et-card et-card-pad">
+          <b>Read our insights</b>
+          <small>Guides and articles on corporate-commercial practice</small>
         </Link>
         <Link href="/contact" className="et-card et-card-pad">
           <b>Contact us</b>
@@ -90,10 +130,10 @@ export default async function AboutPage() {
       <section className="et-card et-home-cta">
         <BookOpen size={22} />
         <h2>Start learning today</h2>
-        <p>Create your free account in under a minute.</p>
+        <p>Register and find the course that fits your practice.</p>
         <div className="et-home-ctas">
           <Link href="/signup" className="et-btn et-btn-primary et-home-btn">
-            Get started free <ArrowRight size={16} />
+            Register now <ArrowRight size={16} />
           </Link>
         </div>
       </section>

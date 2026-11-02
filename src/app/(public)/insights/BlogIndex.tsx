@@ -66,7 +66,7 @@ export function BlogIndex({ posts, categories, postCats, curated }: { posts: Pos
         <section className={`et-pb-hero${latest.length ? "" : " is-solo"}`}>
           <div>
             <h2>Featured</h2>
-            <Link href={`/blog/${featured.slug}`} className="et-pb-featured">
+            <Link href={`/insights/${featured.slug}`} className="et-pb-featured">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {featured.cover_url ? <img src={featured.cover_url} alt="" /> : <span className="et-pb-noimg" />}
               <span className="et-pb-shade" />
@@ -85,7 +85,7 @@ export function BlogIndex({ posts, categories, postCats, curated }: { posts: Pos
               <ul className="et-pb-latest">
                 {latest.map((p) => (
                   <li key={p.id}>
-                    <Link href={`/blog/${p.slug}`}>
+                    <Link href={`/insights/${p.slug}`}>
                       <span className="et-pb-thumb">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {p.cover_url && <img src={p.cover_url} alt="" />}
@@ -161,7 +161,7 @@ export function BlogIndex({ posts, categories, postCats, curated }: { posts: Pos
               {shown.map((p) => {
                 const cat = firstCat(p.id);
                 return (
-                  <Link key={p.id} href={`/blog/${p.slug}`} className="et-pb-card">
+                  <Link key={p.id} href={`/insights/${p.slug}`} className="et-pb-card">
                     <span className="et-pb-img">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       {p.cover_url && <img src={p.cover_url} alt="" />}

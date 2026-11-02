@@ -183,7 +183,7 @@ export function BlogEditor({ initial, categories, authors }: { initial: EditorPo
                 <span>URL slug</span>
               </div>
               <div className="et-be-slug">
-                <span>{SITE}/blog/</span>
+                <span>{SITE}/insights/</span>
                 <input
                   className="et-input"
                   value={slug}

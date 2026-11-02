@@ -1976,6 +1976,54 @@ export type Database = {
           },
         ]
       }
+      sme_products: {
+        Row: {
+          category: string
+          cover_url: string | null
+          created_at: string
+          currency: string
+          id: string
+          kind: string
+          name: string
+          position: number
+          price_minor: number | null
+          slug: string
+          status: string
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          name: string
+          position?: number
+          price_minor?: number | null
+          slug: string
+          status?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          name?: string
+          position?: number
+          price_minor?: number | null
+          slug?: string
+          status?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           body: string
@@ -2383,6 +2431,10 @@ export type Database = {
       renew_enrollments: {
         Args: { p_user_id: string; p_course_ids: string[] }
         Returns: undefined
+      }
+      rls_auto_enable: {
+        Args: never
+        Returns: unknown
       }
       track_visit: {
         Args: { p_visit_id: string; p_visitor_id: string; p_user_id: string; p_path: string; p_new_campaign: boolean; p_referrer: string; p_referrer_host: string; p_utm_source: string; p_utm_medium: string; p_utm_campaign: string; p_utm_term: string; p_utm_content: string; p_channel: string; p_country: string; p_region: string; p_city: string; p_device: string; p_browser: string; p_os: string }

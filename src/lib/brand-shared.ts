@@ -24,7 +24,7 @@ export type Brand = {
 };
 
 export const BRAND_DEFAULTS: Brand = {
-  name: process.env.NEXT_PUBLIC_SITE_NAME || "Scolar",
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "ME Academy",
   tagline: "Learn at your own pace and earn certificates you can share.",
   logoUrl: null,
   logoDarkUrl: null,
@@ -33,7 +33,7 @@ export const BRAND_DEFAULTS: Brand = {
   accentFg: "#ffffff",
   themeDefault: "light",
   font: "geist",
-  emailFromName: process.env.NEXT_PUBLIC_SITE_NAME || "Scolar",
+  emailFromName: process.env.NEXT_PUBLIC_SITE_NAME || "ME Academy",
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
