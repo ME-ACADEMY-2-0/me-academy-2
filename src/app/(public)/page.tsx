@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, ArrowUpRight, Award, BadgeCheck, CalendarDays, FileText, GraduationCap, PlayCircle, Smartphone, Users } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Award, BookOpen, Check, PlayCircle, Smartphone, Star, UserPlus, Users } from "lucide-react";
 import { getCatalog } from "@/lib/data/learn";
 import { getPublicBlog } from "@/lib/data/blog";
 import { getSiteStats } from "@/lib/data/site";
-import { getSmeProducts } from "@/lib/data/sme";
 import { TESTIMONIALS } from "@/lib/testimonials";
-import { MARY_ACADEMY_ROLE, PROGRAMMES, SME_SECTIONS } from "@/lib/site-content";
+import { MARY_ACADEMY_ROLE, SITE_FAQS } from "@/lib/site-content";
+import { FaqList } from "@/components/market/Page";
 import { PublicCourseGrid } from "@/components/market/PublicCourseGrid";
 import { ActionForm, SubmitButton } from "@/components/dash/ActionForm";
 import { sendContactMessage } from "./contact/actions";
@@ -21,14 +21,6 @@ const TOPIC_CARDS = [
   { title: "Project Finance", href: "/legal-training/project-finance", img: "/content/courses/project-finance.png" },
 ];
 
-const SME_COVERS: Record<string, string> = {
-  "startup-documents": "/content/sme/startup-pack-bundle.png",
-  "investment-agreements": "/content/sme/shareholders-agreement.png",
-  "employment-contracts": "/content/sme/employment-contract.png",
-  "hr-policies": "/content/sme/hr-policies-pack.png",
-  "corporate-governance": "/content/sme/written-resolutions-bundle.png",
-};
-
 const FEATURES = [
   { icon: Users, title: "Expert-Led Learning", body: "Learn from top legal professionals with real-world experience in the transactions they teach." },
   { icon: Smartphone, title: "Convenient Practice", body: "Flexible, hands-on training that fits around a busy schedule, on a phone or a laptop." },
@@ -36,14 +28,22 @@ const FEATURES = [
   { icon: Award, title: "Verifiable Certificates", body: "Finish a course to earn a certificate with an ID that anyone can check." },
 ];
 
-const FACULTY = [
-  { img: "/content/people/mary-ekemezie.png", name: "Mary Ekemezie" },
-  { img: "/content/people/onyinye-okafor.png", name: "Onyinye Okafor" },
-  { img: "/content/people/joseph-eimunjeze.png", name: "Joseph Eimunjeze" },
-  { img: "/content/people/okechukwu-okoro.jpg", name: "Okechukwu Okoro" },
-  { img: "/content/people/chisom-ndubuisi.jpg", name: "Chisom Ndubuisi" },
-  { img: "/content/people/victor-samuel.webp", name: "Victor Samuel" },
+const STEPS = [
+  { icon: UserPlus, title: "Create your account", body: "Sign up in a minute and your courses, progress and certificates stay in one place." },
+  { icon: BookOpen, title: "Choose a course", body: "Browse by practice area or level and pick the course that fits the work you do." },
+  { icon: PlayCircle, title: "Learn at your pace", body: "Watch recorded lessons and slides on a phone or laptop, and return to them whenever you need." },
+  { icon: Award, title: "Earn your certificate", body: "Finish the course to receive a certificate with an ID that anyone can verify." },
 ];
+
+const HOME_FAQ = [
+  "What is ME Academy?",
+  "Who is ME Academy for?",
+  "How do the courses work?",
+  "Do courses attract CPD points?",
+  "Will I get a certificate?",
+  "What is the SME Hub?",
+];
+const FAQ_ITEMS = SITE_FAQS.flatMap((g) => g.items).filter((f) => HOME_FAQ.includes(f.q)).sort((a, b) => HOME_FAQ.indexOf(a.q) - HOME_FAQ.indexOf(b.q));
 
 const FEATURED_QUOTE = "Rachael Olayemi";
 const QUOTE_ROW = ["Adaora Ann Nwana", "Chima Nwogu", "Benita Ndu-Okeke", "Yvonne Ezekiel", "Fortune Ihator"];
@@ -65,11 +65,21 @@ export default function Home() {
       <section className="mh-hero">
         <div className="mh-hero-grid">
           <div className="mh-hero-copy">
-            <span className="mh-eyebrow">Preparing professionals. Strengthening institutions.</span>
+            <span className="mh-pill">Preparing professionals. Strengthening institutions.</span>
             <h1>
               Practical <em>Corporate-Commercial</em> &amp; Transactional Legal Education
             </h1>
-            <p>Expert Led Courses. Over 7 decades worth of combined experience.</p>
+            <div className="mh-proof">
+              <span className="mh-avatars" aria-hidden="true">
+                <img src="/content/people/mary-ekemezie.png" alt="" />
+                <img src="/content/people/onyinye-okafor.png" alt="" />
+                <img src="/content/people/joseph-eimunjeze.png" alt="" />
+              </span>
+              <p>
+                <b>Expert Led Courses</b>
+                <span>Over 7 decades worth of combined experience</span>
+              </p>
+            </div>
             <div className="mh-ctas">
               <Link href="/signup" className="mh-btn mh-btn-amber">
                 Register now <ArrowRight size={16} />
@@ -79,33 +89,67 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="mh-collage" aria-label="ME Academy facilitators">
-            <figure className="mh-collage-main">
+          <div className="mh-float" aria-label="ME Academy facilitators">
+            <figure className="mh-float-main">
               <img src="/content/people/mary-ekemezie.png" alt="Mary Ekemezie" />
-              <figcaption>
-                <b>Mary Ekemezie</b>
-                <small>{MARY_ACADEMY_ROLE}</small>
-              </figcaption>
             </figure>
-            <figure className="mh-collage-a">
+            <div className="mh-float-card">
+              <img src="/content/people/mary-ekemezie.png" alt="" />
+              <div>
+                <b>Mary Ekemezie</b>
+                <span>
+                  <span className="mh-stars" aria-hidden="true">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <Star key={i} size={14} fill="currentColor" />
+                    ))}
+                  </span>
+                  {MARY_ACADEMY_ROLE}
+                </span>
+              </div>
+            </div>
+            <figure className="mh-float-a">
               <img src="/content/people/onyinye-okafor.png" alt="Onyinye Okafor" />
             </figure>
-            <figure className="mh-collage-b">
+            <figure className="mh-float-b">
               <img src="/content/people/joseph-eimunjeze.png" alt="Joseph Eimunjeze" />
             </figure>
           </div>
         </div>
-        <nav className="mh-hero-bar" aria-label="Start here">
-          <Link href="/legal-training">
-            <GraduationCap size={18} /> Legal training <ArrowUpRight size={15} />
-          </Link>
-          <Link href="/nba-icle">
-            <BadgeCheck size={18} /> NBA-ICLE approved CPD <ArrowUpRight size={15} />
-          </Link>
-          <Link href="/sme-hub">
-            <FileText size={18} /> SME Hub templates <ArrowUpRight size={15} />
-          </Link>
-        </nav>
+      </section>
+
+      {/* About us */}
+      <section className="mh-about">
+        <figure className="mh-about-media">
+          <img src="/content/people/mary-ekemezie.png" alt="Mary Ekemezie" loading="lazy" />
+          <figcaption>
+            <b>Mary Ekemezie</b>
+            <small>{MARY_ACADEMY_ROLE}</small>
+          </figcaption>
+        </figure>
+        <div className="mh-about-copy">
+          <span className="mh-eyebrow">About ME Academy</span>
+          <h2>Practical training from lawyers who do the deals</h2>
+          <p>ME Academy was founded in 2021 by Mary Ekemezie. We bridge the gap between formal legal education and corporate-commercial practice, with practical, transactional skills taught by experienced practitioners.</p>
+          <ul className="mh-checks">
+            <li>
+              <Check size={16} aria-hidden="true" /> Over 7 decades of combined experience
+            </li>
+            <li>
+              <Check size={16} aria-hidden="true" /> Recorded courses and live cohorts
+            </li>
+            <li>
+              <Check size={16} aria-hidden="true" /> NBA-ICLE approved CPD programmes
+            </li>
+          </ul>
+          <div className="mh-ctas">
+            <Link href="/about" className="mh-btn mh-btn-amber">
+              About us <ArrowRight size={16} />
+            </Link>
+            <Link href="/facilitators" className="mh-btn mh-btn-line">
+              Meet the facilitators
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* Primary: practice areas */}
@@ -132,6 +176,43 @@ export default function Home() {
         </Link>
       </section>
 
+      {/* Why choose us */}
+      <section className="mh-section">
+        <div className="mh-head is-center">
+          <span className="mh-eyebrow">Why ME Academy</span>
+          <h2>Learning built around the transactions you will actually work on</h2>
+        </div>
+        <div className="mh-feats is-light">
+          {FEATURES.map(({ icon: Icon, title, body }) => (
+            <div key={title} className="mh-feat">
+              <span>
+                <Icon size={18} />
+              </span>
+              <b>{title}</b>
+              <p>{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="mh-section">
+        <div className="mh-head is-center">
+          <span className="mh-eyebrow">How it works</span>
+          <h2>From sign-up to certificate in four steps</h2>
+        </div>
+        <ol className="mh-steps">
+          {STEPS.map(({ icon: Icon, title, body }, i) => (
+            <li key={title}>
+              <span className="mh-step-n">{i + 1}</span>
+              <Icon size={22} aria-hidden="true" />
+              <b>{title}</b>
+              <p>{body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       {/* Featured courses */}
       <section className="mh-section">
         <div className="mh-head">
@@ -148,113 +229,15 @@ export default function Home() {
         </Suspense>
       </section>
 
-      {/* Secondary: NBA-ICLE flagship */}
-      <section className="mh-nba">
-        <div className="mh-nba-copy">
-          <span className="mh-eyebrow">NBA-ICLE approved CPD programmes</span>
-          <h2>NBA-ICLE Approved Legal Training</h2>
-          <p>NBA-ICLE has approved ME Academy as an accredited service provider. Choose live cohorts with real-time Q&amp;A, or recordings of past approved courses you can watch at your own pace.</p>
-          <div className="mh-nba-paths">
-            <span>
-              <CalendarDays size={18} /> Live programmes
-            </span>
-            <span>
-              <PlayCircle size={18} /> Past approved recordings
-            </span>
-          </div>
-          <Link href="/nba-icle" className="mh-btn mh-btn-ink">
-            Explore the NBA-ICLE hub <ArrowRight size={16} />
-          </Link>
-        </div>
-        <ul className="mh-nba-list">
-          {PROGRAMMES.slice(0, 5).map((p) => (
-            <li key={p.slug}>
-              <Link href={`/nba-icle/${p.slug}`}>
-                <span>
-                  <small>{p.kind === "live" ? "Live programme" : "Recording"}</small>
-                  <b>{p.title}</b>
-                </span>
-                <ArrowUpRight size={16} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Third: SME Hub */}
-      <section className="mh-section">
-        <div className="mh-head">
-          <div>
-            <span className="mh-eyebrow">SME Hub</span>
-            <h2>Legal &amp; business resources for Nigerian startups and SMEs</h2>
-          </div>
-          <Link href="/sme-hub" className="mh-link">
-            See all templates <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="mh-sme">
-          {SME_SECTIONS.map((s) => (
-            <Link key={s.slug} href={`/sme-hub/${s.slug}`} className="mh-sme-card">
-              <img src={SME_COVERS[s.slug]} alt="" loading="lazy" />
-              <span>
-                <b>{s.title}</b>
-                <ArrowUpRight size={15} />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Dark band: why us + stats */}
+      {/* Stats band */}
       <section className="mh-band">
         <div className="mh-band-head">
-          <span className="mh-eyebrow">Our approach</span>
-          <h2>Learning built around the transactions you will actually work on</h2>
-        </div>
-        <div className="mh-feats">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="mh-feat">
-              <span>
-                <Icon size={18} />
-              </span>
-              <b>{title}</b>
-              <p>{body}</p>
-            </div>
-          ))}
+          <span className="mh-eyebrow">ME Academy in numbers</span>
+          <h2>Practical legal education, built on decades of practice</h2>
         </div>
         <Suspense fallback={<Stats />}>
           <LiveStats />
         </Suspense>
-      </section>
-
-      {/* Faculty strip */}
-      <section className="mh-strip">
-        <div className="mh-strip-faces">
-          {FACULTY.map((f) => (
-            <img key={f.name} src={f.img} alt={f.name} loading="lazy" />
-          ))}
-        </div>
-        <div className="mh-strip-cap">
-          <h3>Turning rookies into experts within a short time.</h3>
-          <Link href="/signup" className="mh-btn mh-btn-amber">
-            Register now <ArrowUpRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {/* Organisations */}
-      <section className="mh-section">
-        <div className="mh-head is-center">
-          <span className="mh-eyebrow">Alumni</span>
-          <h2>Organisations whose teams have learned with us</h2>
-        </div>
-        <div className="mh-logos">
-          {Array.from({ length: 12 }, (_, i) => (
-            <span key={i}>
-              <img src={`/content/orgs/org-${i}.png`} alt="" loading="lazy" />
-            </span>
-          ))}
-        </div>
       </section>
 
       {/* Testimonials */}
@@ -295,6 +278,22 @@ export default function Home() {
               </figcaption>
             </figure>
           ))}
+        </div>
+      </section>
+
+      {/* Call to action */}
+      <section className="mh-cta">
+        <div>
+          <h2>Ready to start learning?</h2>
+          <p>Create an account and start your first course today, or talk to us first.</p>
+        </div>
+        <div className="mh-ctas">
+          <Link href="/signup" className="mh-btn mh-btn-amber">
+            Register now <ArrowRight size={16} />
+          </Link>
+          <Link href="/contact" className="mh-btn mh-btn-line">
+            Contact us
+          </Link>
         </div>
       </section>
 
@@ -340,6 +339,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <div className="mh-faq">
+        <FaqList items={FAQ_ITEMS} title="Questions people ask before they start" />
+        <Link href="/faq" className="mh-link">
+          See all questions <ArrowRight size={14} />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -367,14 +374,14 @@ function Stats({ items }: { items?: StatItem[] }) {
 
 async function LiveStats() {
   await connection();
-  const [site, sme] = await Promise.all([getSiteStats(), getSmeProducts()]);
+  const site = await getSiteStats();
   return (
     <Stats
       items={[
         { value: "7+", label: "Decades of combined experience" },
         { value: "7", label: "Expert facilitators" },
         { value: String(site.courses), label: "Courses" },
-        { value: String(sme.length), label: "Ready-to-use templates" },
+        { value: "2021", label: "Year founded" },
       ]}
     />
   );
